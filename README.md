@@ -1,15 +1,13 @@
 # Practical Machine Learning Course Project
-------------
 
 This is about Coursera Data Science Module 8 - Practical Machine Learning Course Project
 
 ## Background
-------------
 
 Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
 
 ## Data
-------------
+
 The training data for this project are available here:
 
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
@@ -20,7 +18,6 @@ https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
 
 
 ## Machine Learning Model
-------------
 
 The PracticalMachineLearning.Rmd does the following:
 
@@ -36,7 +33,6 @@ Apply the Random Forests model to the testing data and print out the result with
 
 
 ## HTML Report
-------------
 
 The PracticalMachineLearning.html is also uploaded as index.html in the gh-pages branch.
 
@@ -44,6 +40,7 @@ You can view the HTML report [here](https://wweiw.github.io/PracticalMachineLear
 
 
 ## Branches and Format
-------------
+
 The R markdown file (Rmd) is in the **master** branch.
+
 The HTML file is in the **gh-pages** branch.
