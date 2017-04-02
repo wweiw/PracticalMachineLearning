@@ -1,0 +1,126 @@
+---
+title: "Practical Machine Learning Course Project"
+output: html_document
+---
+
+## Overview
+
+When using devices such as *Jawbone Up*, *Nike FuelBand*, and *Fitbit*, this is able to collect large amount of data about personal activity. However we noticed that majority of the people tends to focus on how much of a particular activity they do, rather than focus on how well they do it.
+
+In this project, the data that will be used is taken from the accelerometers on the belt, forearm, arm and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. The training data contains accelerometer data and a 'classe' label which representing the method of the activity the participants were doing. Whereas the testing data contains accelerometer data without the 'classe' label. The objective of the project is to predict the labels for the test set observations.
+
+## Data
+The training data for this project are available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv)
+
+The test data are available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv)
+
+### Libraries
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+library(lattice)
+library(ggplot2)
+library(caret)
+library(randomForest)
+library(rpart)
+library(rpart.plot)
+library(corrplot)
+```
+
+## Data Processing
+### Loading data
+
+```{r}
+# reading training set data
+trainingdata <- read.csv("pml-training.csv", na.strings = c("NA", ""))
+# reading testing set data
+testingdata <- read.csv("pml-testing.csv", na.strings = c("NA", ""))
+dim(trainingdata)
+dim(testingdata)
+```
+Above dimensions showed that the training data and testing data have 19622 observations and 20 observations respectively. Both of the data sets contain 160 variables. 'classe' variable in training data is the outcome that we are going to predict.
+
+### Cleaning data
+```{r}
+#Remove observations that contains missing values
+trainingdata <- trainingdata[, colSums(is.na(trainingdata)) == 0] 
+testingdata <- testingdata[, colSums(is.na(testingdata)) == 0] 
+```
+
+The first 7 variables/predictors will be removed because these variables less influential prediction on the 'classe' outcome.
+
+```{r}
+#Subset the columns and data that required for analysis
+trainCleanData <- trainingdata[, -c(1:7)]
+testCleanData <- testingdata[, -c(1:7)]
+dim(trainCleanData)
+dim(testCleanData)
+```
+
+After data cleaning, the training data and testing data now contain 53 variables only (their observations rows still remained the same). The difference of these two data sets is the last column, that training data ended with 'classe' variable, while testing data ended with 'problem_id' variable.
+
+## Data Modeling
+### Split training data to 7:3 ratio for cross validation
+We then split the cleaned training data into a training data set (70%) and a validation data set (30%). The validation data set is meant to use for cross validation, that we will be calculating the out-of-sample errors.
+
+```{r}
+set.seed(3579) # for reproducible 
+inTrain <- createDataPartition(trainCleanData$classe, p=0.70, list=FALSE)
+trainDataSet <- trainCleanData[inTrain, ]
+testDataSet <- trainCleanData[-inTrain, ]
+```
+
+### Use Random Forests Prediction Model
+The **Random Forests** algorithm is one of the best among classification algorithms due to able to classify large amounts of data with accuracy. With that, **Random Forests** algorithm is chosen in the prediction model together with *5-fold cross-validation* on the 'trainDataSet'.
+
+```{r}
+controlRF <- trainControl(method="cv", 5) # 5 fold cross validation
+modelRF <- train(classe ~ ., data=trainDataSet, method="rf", trControl=controlRF, ntree=250)
+modelRF
+```
+
+### Cross check accuracy and validation
+Now, we examine the performance of the model on the validation data set.
+
+```{r}
+predictRF <- predict(modelRF, testDataSet)
+confMatRF <- confusionMatrix(testDataSet$classe, predictRF)
+
+accuracyRF <- confMatRF$overall[1]
+accuracyRF
+
+OutSampleErr <- 1 - as.numeric(accuracyRF)
+OutSampleErr
+```
+
+Based on result above, the estimated accuracy of the model is 99.35% and the estimated out-of-sample error is 0.65%. 
+Hence we can conclude that many predictors are highly correlated using this model.
+
+```{r}
+#Decision Visualization
+treeModel <- rpart(classe ~ ., data=trainDataSet, method="class")
+prp(treeModel)
+```
+
+### Perform prediction for the Test Data
+To achieve the goal of the project, **Random Forests** model will be applied to the cleaned testing data to predict the outcome variable 'classe'.
+
+```{r}
+#Define write files function
+pml_write_files = function(x) {
+  n = length(x)
+  for (i in 1:n) {
+    filename = paste0("./prediction/problem_id_", i, ".txt")
+    write.table(x[i], file=filename, quote=FALSE,row.names=FALSE, col.names=FALSE)
+  }
+}
+
+result <- predict(modelRF, testingdata[, -length(names(testingdata))])
+result
+
+#Write the prediction result to files
+pml_write_files(result)
+
+```
+
+## Conclusion
+**Random Forests** model that was chosen in this course project able to show high accuracy in prediction, hence this model was applied to the 20 test cases to predict the 'classe' variable.
